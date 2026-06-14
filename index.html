@@ -7,7 +7,7 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
-    <!-- Ad SDK loaded dynamically after config fetch -->
+    <script src='//libtl.com/sdk.js' data-zone='9406863' data-sdk='show_9406863'></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -538,7 +538,7 @@
 
         <div class="withdraw-notice">
             ⚠️ <b>Withdraw Rules:</b><br>
-            • কমপক্ষে <b><span id="wdMinRefsShow">3</span> জন</b> রেফার করতে হবে<br>
+            • কমপক্ষে <b>৩ জন</b> রেফার করতে হবে<br>
             • মিনিমাম withdraw <b>৳<span id="wdMinShow">20</span></b><br>
             • <span id="wdNoticeText">Withdraw 24 ঘন্টার মধ্যে process হবে</span>
         </div>
@@ -717,12 +717,8 @@ let appConfig = {
     adReward: 0.50,
     minReferralsForWithdraw: 3,
     supportLink: 'https://t.me/EarnWalletbd',
-    tutorialLink: '',
-    adZoneId: '9406863'
+    tutorialLink: ''
 };
-
-// Load default ad SDK on startup
-loadAdSdk('9406863');
 
 let userData = null; // Firebase user data
 let userId = null;
@@ -731,34 +727,10 @@ let userId = null;
 const fmt = (n) => Number(n).toFixed(2);
 const now = () => Date.now();
 
-// ===== DYNAMIC AD SDK LOADER =====
-let adSdkLoaded = false;
-let currentAdZoneId = '9406863'; // default fallback
-
-function loadAdSdk(zoneId) {
-    if (!zoneId) return;
-    currentAdZoneId = String(zoneId);
-    // Remove old script if exists
-    const old = document.getElementById('ad-sdk-script');
-    if (old) old.remove();
-    // Inject new script
-    const s = document.createElement('script');
-    s.id = 'ad-sdk-script';
-    s.src = '//libtl.com/sdk.js';
-    s.setAttribute('data-zone', currentAdZoneId);
-    s.setAttribute('data-sdk', 'show_' + currentAdZoneId);
-    s.async = true;
-    s.onload = () => { adSdkLoaded = true; };
-    document.head.appendChild(s);
-}
-
 // ===== SHOW AD BEFORE EVERY ACTION =====
 function showAd(callback, delay = 1500) {
     try {
-        const fn = window['show_' + currentAdZoneId];
-        if (typeof fn === 'function') {
-            fn({ type: 'inApp', inAppSettings: { frequency: 1, capping: 0.1, interval: 1, timeout: 5, everyPage: true } });
-        }
+        show_9406863({ type: 'inApp', inAppSettings: { frequency: 1, capping: 0.1, interval: 1, timeout: 5, everyPage: true } });
     } catch(e) {}
     setTimeout(callback, delay);
 }
@@ -804,13 +776,8 @@ db.ref('config').on('value', snap => {
             adReward: Number(c.adReward) || 0.50,
             minReferralsForWithdraw: Number(c.minReferralsForWithdraw) || 3,
             supportLink: c.supportLink || appConfig.supportLink,
-            tutorialLink: c.tutorialLink || '',
-            adZoneId: c.adZoneId || appConfig.adZoneId
+            tutorialLink: c.tutorialLink || ''
         });
-        // Reload ad SDK if zone ID changed
-        if (c.adZoneId && c.adZoneId !== currentAdZoneId) {
-            loadAdSdk(c.adZoneId);
-        }
         // Update dynamic UI
         document.getElementById('adsDailyLimit').textContent = appConfig.dailyAdLimit;
         document.getElementById('limitInfoSpan').textContent = appConfig.dailyAdLimit;
@@ -818,7 +785,6 @@ db.ref('config').on('value', snap => {
         document.getElementById('rewardedAdShow').textContent = fmt(appConfig.adReward);
         document.getElementById('homeAdReward').textContent = fmt(appConfig.adReward);
         document.getElementById('wdMinShow').textContent = appConfig.minWithdraw;
-        document.getElementById('wdMinRefsShow').textContent = appConfig.minReferralsForWithdraw;
         document.getElementById('wdNoticeText').textContent = appConfig.withdrawNotice;
 
         // Payment methods
@@ -1082,10 +1048,7 @@ function watchAd() {
         return;
     }
     try {
-        const fn = window['show_' + currentAdZoneId];
-        if (typeof fn === 'function') {
-            fn({ type: 'inApp', inAppSettings: { frequency: 1, capping: 0.1, interval: 1, timeout: 5, everyPage: true } });
-        }
+        show_9406863({ type: 'inApp', inAppSettings: { frequency: 1, capping: 0.1, interval: 1, timeout: 5, everyPage: true } });
         setTimeout(() => rewardAdWatch(), 3000);
     } catch(e) {
         rewardAdWatch();
